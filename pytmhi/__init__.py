@@ -1,5 +1,3 @@
-# import aiohttp
-# import asyncio
 import datetime
 import logging
 from typing import Dict, Iterable, Literal, Optional, TypedDict
@@ -36,28 +34,12 @@ class TmiApiClient:
     ) -> None:
         self._username = username
         self._password = password
-        # self._session = None
         if loglevel:
             logging.basicConfig(level=loglevel)
 
-    # async def _create_session(self):
-    #     self._session = aiohttp.ClientSession()
 
-    # async def _do_auth_refresh(self):
     def _do_auth_refresh(self):
         """Refresh an authentication token"""
-        # if self._session is None:
-        #     await self._create_session()
-
-        # async with self._session.post(
-        #     self._BASE_URL + "auth/refresh",
-        #     headers={
-        #         **self._DEFAULT_HEADERS,
-        #         "Authorization": f"Bearer {self._auth_token}"
-        #     }
-        # ) as resp:
-        #     return resp
-
         resp = requests.post(
             self._BASE_URL + "auth/refresh",
             headers={
@@ -67,21 +49,9 @@ class TmiApiClient:
         )
         print(resp.text)
 
-    # async def _get_auth_token(self) -> str:
     def _get_auth_token(self) -> str:
         """Get a new auth token by logging in"""
-        # if self._session is None:
-        #     await self._create_session()
-
         login_body = {"username": self._username, "password": self._password}
-
-        # async with self._session.post(
-        #     self._BASE_URL + "auth/refresh",
-        #     headers={
-        #         **self._DEFAULT_HEADERS,
-        #         "Authorization": f"Bearer {self._auth_token}"
-        #     }
-        # ) as login_response:
 
         login_response = requests.post(
             self._BASE_URL + "auth/login",
@@ -98,31 +68,30 @@ class TmiApiClient:
 
         self._auth_token = response_auth_object["token"]
         self._auth_response = response_auth_object
+        self._auth_expiration = datetime.datetime.utcfromtimestamp(
+            self._auth_response.get("expiration", 0),
+        )
         print(self._auth_token)
         return self._auth_token
 
-    # @property
-    def auth_expiration(self):
-        """Using the cached response object, get the expiration datetime"""
-        return datetime.datetime.utcfromtimestamp(
-            self._auth_response.get("expiration", 0),
-        )
+    # def auth_expiration(self):
+    #     """Using the cached response object, get the expiration datetime"""
+    #     return datetime.datetime.utcfromtimestamp(
+    #         self._auth_response.get("expiration", 0),
+    #     )
 
-    # @property
-    # async def auth_token(self) -> str:
     def auth_token(self) -> str:
         """Get the authentication token, either by logging in or by
         refreshing an existing token.
         """
         print("In auth_token")
-        if self._auth_token is None or self.auth_expiration is None:
+        if self._auth_token is None or self._auth_expiration is None:
             logging.info("No previous token found, logging in")
             print("self._auth_token is None")
-            # return await self._get_auth_token()
             return self._get_auth_token()
 
         if datetime.datetime.utcnow() > (
-            self.auth_expiration - datetime.timedelta(seconds=15)
+            self._auth_expiration - datetime.timedelta(seconds=15)
         ):
             if self._auth_response.get("refreshCountLeft", 0) > 0:
                 logging.info("Refreshing expiring token")
@@ -133,7 +102,6 @@ class TmiApiClient:
                 "Token expired and no more refreshes.",
                 "Fetching new token.",
             )
-            # return await self._get_auth_token()
             return self._get_auth_token()
 
         return self._auth_token
@@ -142,7 +110,7 @@ class TmiApiClient:
         """Get the headers for the request, including the auth token"""
         return {
             **self._DEFAULT_HEADERS,
-            "Authorization": f"Bearer {self.auth_token}",
+            "Authorization": f"Bearer {self._auth_token}",
         }
 
     def get(self, *args, **kwargs) -> Dict:
