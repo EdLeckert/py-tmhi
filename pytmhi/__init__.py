@@ -71,7 +71,6 @@ class TmiApiClient:
         self._auth_expiration = datetime.datetime.utcfromtimestamp(
             self._auth_response.get("expiration", 0),
         )
-        print(self._auth_token)
         return self._auth_token
 
     # def auth_expiration(self):
@@ -84,7 +83,6 @@ class TmiApiClient:
         """Get the authentication token, either by logging in or by
         refreshing an existing token.
         """
-        print("In auth_token")
         if self._auth_token is None or self._auth_expiration is None:
             logging.info("No previous token found, logging in")
             print("self._auth_token is None")
@@ -110,7 +108,7 @@ class TmiApiClient:
         """Get the headers for the request, including the auth token"""
         return {
             **self._DEFAULT_HEADERS,
-            "Authorization": f"Bearer {self._auth_token}",
+            "Authorization": f"Bearer {self.auth_token()}",
         }
 
     def get(self, *args, **kwargs) -> Dict:
@@ -148,6 +146,13 @@ class TmiApiClient:
         return self.post(
             self._BASE_URL + "network/configuration/v2?set=ap",
             json=new_ap_config,
+        )
+
+    def reboot_gateway(self):
+        """Reboot the gateway."""
+        return requests.post(
+            self._BASE_URL + "gateway/reset?set=reboot",  
+            headers={**self._get_headers()}
         )
 
     def disable_wifi(
