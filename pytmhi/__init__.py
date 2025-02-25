@@ -101,14 +101,14 @@ class TmiApiClient:
         print(self._auth_token)
         return self._auth_token
 
-    @property
+    # @property
     def auth_expiration(self):
         """Using the cached response object, get the expiration datetime"""
         return datetime.datetime.utcfromtimestamp(
             self._auth_response.get("expiration", 0),
         )
 
-    @property
+    # @property
     # async def auth_token(self) -> str:
     def auth_token(self) -> str:
         """Get the authentication token, either by logging in or by
