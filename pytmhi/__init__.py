@@ -1,5 +1,5 @@
-import aiohttp
-import asyncio
+# import aiohttp
+# import asyncio
 import datetime
 import logging
 from typing import Dict, Iterable, Literal, Optional, TypedDict
@@ -36,56 +36,58 @@ class TmiApiClient:
     ) -> None:
         self._username = username
         self._password = password
-        self._session = None
+        # self._session = None
         if loglevel:
             logging.basicConfig(level=loglevel)
 
-    async def _create_session(self):
-        self._session = aiohttp.ClientSession()
+    # async def _create_session(self):
+    #     self._session = aiohttp.ClientSession()
 
-    async def _do_auth_refresh(self):
+    # async def _do_auth_refresh(self):
+    def _do_auth_refresh(self):
         """Refresh an authentication token"""
-        if self._session is None:
-            await self._create_session()
+        # if self._session is None:
+        #     await self._create_session()
 
-        async with self._session.post(
-            self._BASE_URL + "auth/refresh",
-            headers={
-                **self._DEFAULT_HEADERS,
-                "Authorization": f"Bearer {self._auth_token}"
-            }
-        ) as resp:
-            return resp
-
-        # resp = requests.post(
+        # async with self._session.post(
         #     self._BASE_URL + "auth/refresh",
         #     headers={
         #         **self._DEFAULT_HEADERS,
-        #         "Authorization": f"Bearer {self._auth_token}",
-        #     },
-        # )
-        print(resp.text)
+        #         "Authorization": f"Bearer {self._auth_token}"
+        #     }
+        # ) as resp:
+        #     return resp
 
-    async def _get_auth_token(self) -> str:
-        """Get a new auth token by logging in"""
-        if self._session is None:
-            await self._create_session()
-
-        login_body = {"username": self._username, "password": self._password}
-
-        async with self._session.post(
+        resp = requests.post(
             self._BASE_URL + "auth/refresh",
             headers={
                 **self._DEFAULT_HEADERS,
-                "Authorization": f"Bearer {self._auth_token}"
-            }
-        ) as login_response:
+                "Authorization": f"Bearer {self._auth_token}",
+            },
+        )
+        print(resp.text)
 
-        # login_response = requests.post(
-        #     self._BASE_URL + "auth/login",
-        #     json=login_body,
-        # )
-            json_obj = login_response.json()
+    # async def _get_auth_token(self) -> str:
+    def _get_auth_token(self) -> str:
+        """Get a new auth token by logging in"""
+        # if self._session is None:
+        #     await self._create_session()
+
+        login_body = {"username": self._username, "password": self._password}
+
+        # async with self._session.post(
+        #     self._BASE_URL + "auth/refresh",
+        #     headers={
+        #         **self._DEFAULT_HEADERS,
+        #         "Authorization": f"Bearer {self._auth_token}"
+        #     }
+        # ) as login_response:
+
+        login_response = requests.post(
+            self._BASE_URL + "auth/login",
+            json=login_body,
+        )
+        json_obj = login_response.json()
 
         response_auth_object: TmiAuthResponse = json_obj.get("auth", {})
         if not response_auth_object:
@@ -107,7 +109,8 @@ class TmiApiClient:
         )
 
     @property
-    async def auth_token(self) -> str:
+    # async def auth_token(self) -> str:
+    def auth_token(self) -> str:
         """Get the authentication token, either by logging in or by
         refreshing an existing token.
         """
@@ -115,7 +118,8 @@ class TmiApiClient:
         if self._auth_token is None or self.auth_expiration is None:
             logging.info("No previous token found, logging in")
             print("self._auth_token is None")
-            return await self._get_auth_token()
+            # return await self._get_auth_token()
+            return self._get_auth_token()
 
         if datetime.datetime.utcnow() > (
             self.auth_expiration - datetime.timedelta(seconds=15)
@@ -129,7 +133,8 @@ class TmiApiClient:
                 "Token expired and no more refreshes.",
                 "Fetching new token.",
             )
-            return await self._get_auth_token()
+            # return await self._get_auth_token()
+            return self._get_auth_token()
 
         return self._auth_token
 
