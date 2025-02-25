@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 
 class TmiAuthResponse(TypedDict):
-    """Shape of the response to successful logins/token refreshes"""
+    """Shape of the response to successful logins"""
     expiration: int
     refreshCountLeft: int
     refreshCountMax: int
@@ -26,36 +26,31 @@ class TmiApiClient:
     _auth_response: Optional[TmiAuthResponse] = None
     _auth_token: Optional[str] = None
 
-    username: str
-    password: str
+    _username: str
+    _password: str
 
     def __init__(
         self, username: str, password: str, loglevel: Optional[int] = None
     ) -> None:
-        self.username = username
-        self.password = password
+        self._username = username
+        self._password = password
         if loglevel:
             logging.basicConfig(level=loglevel)
 
-    def _do_auth_refresh(self):
-        """Refresh an authentication token"""
-        resp = requests.post(
-            self._BASE_URL + "auth/refresh",
-            headers={
-                **self._DEFAULT_HEADERS,
-                "Authorization": f"Bearer {self._auth_token}",
-            },
-        )
-        print(resp.text)
 
     def _get_auth_token(self) -> str:
         """Get a new auth token by logging in"""
-        login_body = {"username": self.username, "password": self.password}
+        login_body = {"username": self._username, "password": self._password}
+
         login_response = requests.post(
             self._BASE_URL + "auth/login",
             json=login_body,
         )
+        if not login_response.ok:
+            login_response.raise_for_status()
+
         json_obj = login_response.json()
+
         response_auth_object: TmiAuthResponse = json_obj.get("auth", {})
         if not response_auth_object:
             raise RuntimeError(
@@ -65,36 +60,23 @@ class TmiApiClient:
 
         self._auth_token = response_auth_object["token"]
         self._auth_response = response_auth_object
-
-        return self._auth_token
-
-    @property
-    def auth_expiration(self):
-        """Using the cached response object, get the expiration datetime"""
-        return datetime.datetime.utcfromtimestamp(
+        self._auth_expiration = datetime.datetime.utcfromtimestamp(
             self._auth_response.get("expiration", 0),
         )
+        return self._auth_token
 
-    @property
     def auth_token(self) -> str:
-        """Get the authentication token, either by logging in or by
-        refreshing an existing token.
-        """
-        if self._auth_token is None or self.auth_expiration is None:
+        """Get the authentication token by logging in"""
+        if self._auth_token is None or self._auth_expiration is None:
             logging.info("No previous token found, logging in")
+            print("self._auth_token is None")
             return self._get_auth_token()
 
         if datetime.datetime.utcnow() > (
-            self.auth_expiration - datetime.timedelta(seconds=15)
+            self._auth_expiration - datetime.timedelta(seconds=10)
         ):
-            if self._auth_response.get("refreshCountLeft", 0) > 0:
-                logging.info("Refreshing expiring token")
-                self._do_auth_refresh()
-                return self._auth_token
-
             logging.info(
-                "Token expired and no more refreshes.",
-                "Fetching new token.",
+                "Token expired. Fetching new token."
             )
             return self._get_auth_token()
 
@@ -104,7 +86,7 @@ class TmiApiClient:
         """Get the headers for the request, including the auth token"""
         return {
             **self._DEFAULT_HEADERS,
-            "Authorization": f"Bearer {self.auth_token}",
+            "Authorization": f"Bearer {self.auth_token()}",
         }
 
     def get(self, *args, **kwargs) -> Dict:
@@ -116,22 +98,25 @@ class TmiApiClient:
 
         return response.json()
 
-    def post(self, *args, **kwargs) -> Dict:
-        """Thin wrapper around requests.post to handle authentication."""
-        spec_headers = kwargs.pop("headers") if "headers" in kwargs else {}
-        response = requests.post(
-            *args, **kwargs, headers={**spec_headers, **self._get_headers()}
-        )
-
-        return response.json()
-
     def get_gateway_config(self) -> Dict:
-        """Get all available gateway config info"""
+        """Get the gateway's device, signal, and time"""
         return self.get(self._BASE_URL + "gateway?get=all")
 
     def get_gateway_signal(self) -> Dict:
         """Get the gateway's signal data."""
         return self.get(self._BASE_URL + "gateway?get=signal")
+
+    def get_cell(self) -> Dict:
+        """Get the gateway's cell data."""
+        return self.get(self._BASE_URL + "network/telemetry/?get=cell")
+
+    def get_sim(self) -> Dict:
+        """Get the gateway's sim data."""
+        return self.get(self._BASE_URL + "network/telemetry/?get=sim")
+
+    def get_clients(self) -> Dict:
+        """Get the gateway's clients."""
+        return self.get(self._BASE_URL + "network/telemetry/?get=clients")
 
     def get_ap_config(self) -> Dict:
         """Get the access point config."""
@@ -139,9 +124,17 @@ class TmiApiClient:
 
     def set_ap_config(self, new_ap_config: Dict):
         """Set the access point config."""
-        return self.post(
+        return requests.post(
             self._BASE_URL + "network/configuration/v2?set=ap",
             json=new_ap_config,
+            headers={**self._get_headers()}
+        )
+
+    def reboot_gateway(self):
+        """Reboot the gateway."""
+        return requests.post(
+            self._BASE_URL + "gateway/reset?set=reboot",  
+            headers={**self._get_headers()}
         )
 
     def disable_wifi(

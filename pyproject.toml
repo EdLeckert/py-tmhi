@@ -1,0 +1,17 @@
+[project]
+name = "pytmhi"
+version = "1.0.0"
+authors = [
+  { name="Ed Leckert,Michael R. Torres", email="ed@edleckertimages.com" },
+]
+description = "A py package to access the T-Mobile Home Internet API"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/EdLeckert/py-tmhi.git"
+Issues = "https://github.com/EdLeckert/py-tmhi/issues"
