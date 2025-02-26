@@ -135,7 +135,7 @@ class TmiApiClient:
         """Get the gateway's cell data."""
         return self.get(self._BASE_URL + "network/telemetry/?get=cell")
 
-    def get_cim(self) -> Dict:
+    def get_sim(self) -> Dict:
         """Get the gateway's cim data."""
         return self.get(self._BASE_URL + "network/telemetry/?get=sim")
 
