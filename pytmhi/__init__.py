@@ -17,7 +17,7 @@ class TmiAuthResponse(TypedDict):
 
 class TmiApiClient:
     """Client for the undocumented API on TMobile Home Internet gateways"""
-    _BASE_URL: str = "http://192.168.12.111/TMI/v1/"
+    _BASE_URL: str = "http://192.168.12.1/TMI/v1/"
     _DEFAULT_HEADERS = {
         "accept": "application/json",
         "accept-language": "en-US,en;q=0.9",
