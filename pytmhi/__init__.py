@@ -57,6 +57,9 @@ class TmiApiClient:
             self._BASE_URL + "auth/login",
             json=login_body,
         )
+        if not login_response.ok:
+            login_response.raise_for_status()
+
         json_obj = login_response.json()
 
         response_auth_object: TmiAuthResponse = json_obj.get("auth", {})

@@ -1,6 +1,6 @@
 Metadata-Version: 2.2
 Name: pytmhi
-Version: 0.1.2
+Version: 0.1.3
 Summary: A py package to access the T-Mobile Home Internet API
 Author-email: "Ed Leckert,Michael R. Torres" <ed@edleckertimages.com>
 Project-URL: Homepage, https://github.com/EdLeckert/pytmhi
