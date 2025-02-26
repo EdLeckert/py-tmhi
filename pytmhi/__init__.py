@@ -73,12 +73,6 @@ class TmiApiClient:
         )
         return self._auth_token
 
-    # def auth_expiration(self):
-    #     """Using the cached response object, get the expiration datetime"""
-    #     return datetime.datetime.utcfromtimestamp(
-    #         self._auth_response.get("expiration", 0),
-    #     )
-
     def auth_token(self) -> str:
         """Get the authentication token, either by logging in or by
         refreshing an existing token.
@@ -130,12 +124,24 @@ class TmiApiClient:
         return response.json()
 
     def get_gateway_config(self) -> Dict:
-        """Get all available gateway config info"""
+        """Get the gateway's device, signal, and time"""
         return self.get(self._BASE_URL + "gateway?get=all")
 
     def get_gateway_signal(self) -> Dict:
         """Get the gateway's signal data."""
         return self.get(self._BASE_URL + "gateway?get=signal")
+
+    def get_cell(self) -> Dict:
+        """Get the gateway's cell data."""
+        return self.get(self._BASE_URL + "network/telemetry/?get=cell")
+
+    def get_cim(self) -> Dict:
+        """Get the gateway's cim data."""
+        return self.get(self._BASE_URL + "network/telemetry/?get=sim")
+
+    def get_clients(self) -> Dict:
+        """Get the gateway's clients."""
+        return self.get(self._BASE_URL + "network/telemetry/?get=clients")
 
     def get_ap_config(self) -> Dict:
         """Get the access point config."""
