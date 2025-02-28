@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 
 class TmiAuthResponse(TypedDict):
-    """Shape of the response to successful logins/token refreshes"""
+    """Shape of the response to successful logins"""
     expiration: int
     refreshCountLeft: int
     refreshCountMax: int
@@ -38,17 +38,6 @@ class TmiApiClient:
             logging.basicConfig(level=loglevel)
 
 
-    def _do_auth_refresh(self):
-        """Refresh an authentication token"""
-        resp = requests.post(
-            self._BASE_URL + "auth/refresh",
-            headers={
-                **self._DEFAULT_HEADERS,
-                "Authorization": f"Bearer {self._auth_token}",
-            },
-        )
-        print(resp.text)
-
     def _get_auth_token(self) -> str:
         """Get a new auth token by logging in"""
         login_body = {"username": self._username, "password": self._password}
@@ -77,25 +66,17 @@ class TmiApiClient:
         return self._auth_token
 
     def auth_token(self) -> str:
-        """Get the authentication token, either by logging in or by
-        refreshing an existing token.
-        """
+        """Get the authentication token by logging in"""
         if self._auth_token is None or self._auth_expiration is None:
             logging.info("No previous token found, logging in")
             print("self._auth_token is None")
             return self._get_auth_token()
 
         if datetime.datetime.utcnow() > (
-            self._auth_expiration - datetime.timedelta(seconds=15)
+            self._auth_expiration - datetime.timedelta(seconds=30)
         ):
-            if self._auth_response.get("refreshCountLeft", 0) > 0:
-                logging.info("Refreshing expiring token")
-                self._do_auth_refresh()
-                return self._auth_token
-
             logging.info(
-                "Token expired and no more refreshes.",
-                "Fetching new token.",
+                "Token expired. Fetching new token."
             )
             return self._get_auth_token()
 
