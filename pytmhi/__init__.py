@@ -73,7 +73,7 @@ class TmiApiClient:
             return self._get_auth_token()
 
         if datetime.datetime.utcnow() > (
-            self._auth_expiration - datetime.timedelta(seconds=30)
+            self._auth_expiration - datetime.timedelta(seconds=10)
         ):
             logging.info(
                 "Token expired. Fetching new token."
@@ -93,15 +93,6 @@ class TmiApiClient:
         """Thin wrapper around requests.get to handle authentication."""
         spec_headers = kwargs.pop("headers") if "headers" in kwargs else {}
         response = requests.get(
-            *args, **kwargs, headers={**spec_headers, **self._get_headers()}
-        )
-
-        return response.json()
-
-    def post(self, *args, **kwargs) -> Dict:
-        """Thin wrapper around requests.post to handle authentication."""
-        spec_headers = kwargs.pop("headers") if "headers" in kwargs else {}
-        response = requests.post(
             *args, **kwargs, headers={**spec_headers, **self._get_headers()}
         )
 
@@ -133,9 +124,10 @@ class TmiApiClient:
 
     def set_ap_config(self, new_ap_config: Dict):
         """Set the access point config."""
-        return self.post(
+        return requests.post(
             self._BASE_URL + "network/configuration/v2?set=ap",
             json=new_ap_config,
+            headers={**self._get_headers()}
         )
 
     def reboot_gateway(self):
