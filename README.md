@@ -22,29 +22,45 @@ version = client.get_version()
 
 All functions are synchronous (blocking).
 
-`client.get_gateway_config()`
+```python
+client.get_gateway_config()
+```
 Retrieve gateway device details, basic received signal values, and current time.
 
-`client.get_gateway_signal()`
+```python
+client.get_gateway_signal()
+```
 Retrieve basic received signal values (same as included in above).
 
-`client.get_cell()`
+```python
+client.get_cell()
+```
 Retrieve detailed cell tower and received signal values.
 
-`client.get_sim()`
+```python
+client.get_sim()
+```
 Retrieve sim card data.
 
-`client.get_clients()`
+```python
+client.get_clients()
+```
 Retrieve wired and wireless client details.
 
-`client.get_ap_config()`
+```python
+client.get_ap_config()
+```
 Retrieve access point (wireless) settings.
 
-`client.set_ap_config(new_ap_config)`
+```python
+client.set_ap_config(new_ap_config)
+```
 Set access point (wireless) settings. Gateway will reset and may lose communications for a minute or more.
 Parameter:
   new_ap_config - Contains entire contents from get_ap_config() with any changes to be made.
 
-`client.reboot_gateway()`
+```python
+client.reboot_gateway()
+```
 Causes immediate reboot of gateway.
 
