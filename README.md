@@ -2,7 +2,7 @@
 
 A python client for the T-Mobile Home Internet API.
 
-It was created for use by [ha-tmobilehome](https://github.com/EdLeckert/ha-tmobilehome)
+It was created for use by [ha-tmobilehome](https://github.com/EdLeckert/ha-tmobilehome), a Home Assistant integration.
 
 Tested against a Sercomm TMO-G4SE gateway, hardware version `R02` and software version `1.03.20`.
 
@@ -26,37 +26,37 @@ All functions are synchronous (blocking).
 
 ### Retrieve gateway device details, basic received signal values, and current time.
 ```python
-client.get_gateway_config()
+get_gateway_config()
 ```
 
 ### Retrieve basic received signal values (same as included in above).
 ```python
-client.get_gateway_signal()
+get_gateway_signal()
 ```
 
 ### Retrieve detailed cell tower and received signal values.
 ```python
-client.get_cell()
+get_cell()
 ```
 
 ### Retrieve sim card data.
 ```python
-client.get_sim()
+get_sim()
 ```
 
 ### Retrieve wired and wireless client details.
 ```python
-client.get_clients()
+get_clients()
 ```
 
 ### Retrieve access point (wireless) settings.
 ```python
-client.get_ap_config()
+get_ap_config()
 ```
 
 ### Set access point (wireless) settings. Gateway will reset and may lose communications for a minute or more.
 ```python
-client.set_ap_config(new_ap_config)
+set_ap_config(new_ap_config)
 ```
 | Parameter       | Type | Required?    | Description
 | ---------       | ---- | ---------    | -----------
@@ -64,12 +64,12 @@ client.set_ap_config(new_ap_config)
 
 ### Cause immediate reboot of gateway.
 ```python
-client.reboot_gateway()
+reboot_gateway()
 ```
 
 ### Retrieve current version of API.
 ```python
-client.get_version()
+get_version()
 ```
 
 
@@ -99,7 +99,7 @@ access_point_config["2.4ghz"]["isRadioEnabled"] = False
 client.set_ap_config(access_point_config)
 ```
 
-## Acknowledgement
+## Acknowledgements
 
 Thanks to Michael R. Torres (micrictor) for providing the original version of this fork. 
 Also thanks to Zachary Wander (zacharee), author of HINTControl, which provided a much-needed API reference.
