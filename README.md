@@ -64,3 +64,34 @@ client.reboot_gateway()
 ```
 Causes immediate reboot of gateway.
 
+```python
+client.get_version()
+```
+Retrieve current version of API.
+
+
+## Examples
+
+### Retrieve 4G RSRQ
+
+```python
+rsrq__4g = client.get_gateway_signal()["signal"]["4g"]["rsrq"]
+```
+
+### Retrieve 5G Cell Tower ecgi
+
+```python
+ecgi_5g = client.get_cell()["cell"]["5g"]["ecgi"]
+```
+
+### Turn off 2.4GHz WiFi
+
+Do not turn off WiFi unless you are connected to the gateway via a cable.
+
+Note that the gateway will reset and may lose communications for a minute or more.
+
+```python
+access_point_config = client.get_ap_config()
+access_point_config["2.4ghz"]["isRadioEnabled"] = False
+client.set_ap_config(access_point_config)
+```
