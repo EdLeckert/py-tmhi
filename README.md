@@ -77,7 +77,7 @@ get_version()
 
 ## Examples
 
-### Retrieve 4G RSRQ
+### Retrieve 4G RSRQ (Reference Signal Received Quality)
 
 ```python
 rsrq__4g = client.get_gateway_signal()["signal"]["4g"]["rsrq"]
