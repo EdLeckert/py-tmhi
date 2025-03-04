@@ -13,5 +13,5 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/EdLeckert/pytmhi"
-Issues = "https://github.com/EdLeckert/pytmhi/issues"
+Homepage = "https://github.com/EdLeckert/py-tmhi.git"
+Issues = "https://github.com/EdLeckert/py-tmhi/issues"

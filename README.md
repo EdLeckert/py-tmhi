@@ -1,8 +1,8 @@
-## T-Mobile Home Internet API Client
+# T-Mobile Home Internet API Client
 
 A python client for the T-Mobile Home Internet API.
 
-It was created for use by [ha-tmobilehome](https://github.com/EdLeckert/ha-tmobilehome), a Home Assistant integration.
+This package was developed for use by [ha-tmobilehome](https://github.com/EdLeckert/ha-tmobilehome), a Home Assistant integration.
 
 Tested against a Sercomm TMO-G4SE gateway, hardware version `R02` and software version `1.03.20`.
 
@@ -54,7 +54,9 @@ get_clients()
 get_ap_config()
 ```
 
-### Set access point (wireless) settings. Gateway will reset and may lose communications for a minute or more.
+### Set access point (wireless) settings. 
+
+Note: Gateway will reset and may lose communications for a minute or more.
 ```python
 set_ap_config(new_ap_config)
 ```
@@ -89,9 +91,9 @@ ecgi_5g = client.get_cell()["cell"]["5g"]["ecgi"]
 
 ### Turn off 2.4GHz WiFi
 
-Do not turn off WiFi unless you are connected to the gateway via a cable!
+__Do not turn off WiFi unless you are connected to the gateway via a cable!__
 
-Note that the gateway will reset and may lose communications for a minute or more.
+Note: Gateway will reset and may lose communications for a minute or more.
 
 ```python
 access_point_config = client.get_ap_config()
