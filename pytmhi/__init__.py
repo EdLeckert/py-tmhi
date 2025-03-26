@@ -1,10 +1,12 @@
 import datetime
 import logging
+import time
 from typing import Dict, Iterable, Literal, Optional, TypedDict
 import requests
 
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+# logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+_LOGGER = logging.getLogger(__name__)
 
 
 class TmiAuthResponse(TypedDict):
@@ -34,8 +36,8 @@ class TmiApiClient:
     ) -> None:
         self._username = username
         self._password = password
-        if loglevel:
-            logging.basicConfig(level=loglevel)
+        # if loglevel:
+        #     logging.basicConfig(level=loglevel)
 
 
     def _get_auth_token(self) -> str:
@@ -68,16 +70,16 @@ class TmiApiClient:
     def auth_token(self) -> str:
         """Get the authentication token by logging in"""
         if self._auth_token is None or self._auth_expiration is None:
-            logging.info("No previous token found, logging in")
+            # logging.info("No previous token found, logging in")
             print("self._auth_token is None")
             return self._get_auth_token()
 
         if datetime.datetime.utcnow() > (
             self._auth_expiration - datetime.timedelta(seconds=10)
         ):
-            logging.info(
-                "Token expired. Fetching new token."
-            )
+            # logging.info(
+            #     "Token expired. Fetching new token."
+            # )
             return self._get_auth_token()
 
         return self._auth_token
@@ -118,17 +120,43 @@ class TmiApiClient:
         """Get the gateway's clients."""
         return self.get(self._BASE_URL + "network/telemetry/?get=clients")
 
-    def get_ap_config(self) -> Dict:
+    def get_ap_config(self, retries: Optional[int] = 0, retry_seconds: Optional[int] = 1) -> Dict:
         """Get the access point config."""
-        return self.get(self._BASE_URL + "network/configuration/v2?get=ap")
+        _retries = retries+1
+        _error = 408
+
+        # Gateway gets busy after an update and returns HTTP 408 until stable.
+        while _error == 408 and _retries > 0:
+            result = self.get(self._BASE_URL + "network/configuration/v2?get=ap")
+            if "result" in result:
+                # Error returned, not data
+                _error = result['result']['statusCode']
+                _retries -= 1
+                _LOGGER.debug(f"Error {str(_error)} getting access_point data; {_retries} retries left")
+                if _retries > 0:
+                   time.sleep(retry_seconds)
+            else:
+                # Successful GET
+                _error = 200
+                _LOGGER.debug(f"Success getting access_point data")
+
+        if _error != 200:
+            raise Exception("Error {error} retrieving access_point data")
+        return result
 
     def set_ap_config(self, new_ap_config: Dict):
         """Set the access point config."""
-        return requests.post(
-            self._BASE_URL + "network/configuration/v2?set=ap",
-            json=new_ap_config,
-            headers={**self._get_headers()}
-        )
+        try:
+            result = requests.post(
+                self._BASE_URL + "network/configuration/v2?set=ap",
+                json=new_ap_config,
+                headers={**self._get_headers()}
+            )
+            _LOGGER.debug(f"Success setting access_point data")
+            return result
+        except Exception as exc:
+            _LOGGER.debug(f"Error {str(exc)} setting access_point data")
+            raise
 
     def reboot_gateway(self):
         """Reboot the gateway."""
