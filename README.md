@@ -51,12 +51,20 @@ get_clients()
 
 ### Retrieve access point (wireless) settings.
 ```python
-get_ap_config()
+get_ap_config(retries, retry_seconds)
 ```
+After an update to the access point settings by `set_ap_config`, the gateway will need some time to configure the new settings.
+If an attempt is made to access the current settings while the gateway is busy, it will return HTTP 408 instead of data. These
+retry settings can be used to give the gateway time to recover.
+
+| Parameter       | Type | Required? | Default | Description
+| ---------       | ---- | --------- | ------- | -----------
+| `retries`       | dict | optional  |    0    | Times to retry if gateway is busy
+| `retry_seconds` | dict | optional  |    1    | Seconds between retries
 
 ### Set access point (wireless) settings. 
 
-Note: Gateway will reset and may lose communications for a minute or more.
+Note: Gateway will reconfigure wireless settings and may not respond successfully to subsequent requests for a short period.
 ```python
 set_ap_config(new_ap_config)
 ```
@@ -65,6 +73,8 @@ set_ap_config(new_ap_config)
 | `new_ap_config` | dict | **required** | Contains entire contents from get_ap_config() with any changes to be made. (See example below.)
 
 ### Cause immediate reboot of gateway.
+
+Note: Gateway will reset and may lose communications for several minutes.
 ```python
 reboot_gateway()
 ```
@@ -89,9 +99,9 @@ rsrq__4g = client.get_gateway_signal()["signal"]["4g"]["rsrq"]
 ecgi_5g = client.get_cell()["cell"]["5g"]["ecgi"]
 ```
 
-### Turn off 2.4GHz WiFi
+### Turn off 2.4GHz Wi-Fi
 
-__Do not turn off WiFi unless you are connected to the gateway via a cable!__
+__Do not turn off Wi-Fi unless you are connected to the gateway via a cable!__
 
 Note: Gateway will reset and may lose communications for a minute or more.
 
